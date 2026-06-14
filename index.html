@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SVKSEZ - ລະບົບສະຖິຕິແຮງງານ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Noto Sans Lao","Phetsarath OT",sans-serif;background:#f0f4f8;color:#1e293b;font-size:14px;min-height:100vh}
+input,select,textarea{font-family:inherit;font-size:13px;padding:8px 11px;border:1.5px solid #cbd5e1;border-radius:7px;background:#fff;color:#1e293b;width:100%}
+input:focus,select:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,0.12)}
+input[readonly]{background:#f8fafc;color:#64748b;cursor:not-allowed}
+button{font-family:inherit;font-size:13px;cursor:pointer;border-radius:7px;border:1.5px solid #cbd5e1;padding:8px 16px;background:#f8fafc;color:#1e293b;transition:all 0.15s}
+button:hover{opacity:0.85}
+button:disabled{opacity:0.5;cursor:not-allowed}
+.card{background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.card-title{font-weight:700;font-size:13px;color:#475569;padding-bottom:10px;border-bottom:1.5px solid #f1f5f9;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.row{margin-bottom:12px}
+.label{font-size:12px;color:#64748b;margin-bottom:5px;font-weight:600}
+.label.req::after{content:" *";color:#dc2626}
+.btn-blue{background:#2563eb;color:#fff;border-color:#2563eb}
+.btn-green{background:#16a34a;color:#fff;border-color:#16a34a}
+.btn-red{background:#dc2626;color:#fff;border-color:#dc2626}
+.btn-orange{background:#ea580c;color:#fff;border-color:#ea580c}
+.btn-purple{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.btn-teal{background:#0d9488;color:#fff;border-color:#0d9488}
+.btn-excel{background:#1d6f42;color:#fff;border-color:#1d6f42}
+.btn-active{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;font-weight:600}
+.stat{background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;padding:10px;text-align:center}
+.stat-lbl{font-size:11px;color:#64748b;margin-bottom:3px}
+.stat-val{font-size:20px;font-weight:700}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-g{background:#dcfce7;color:#15803d}
+.badge-r{background:#fee2e2;color:#b91c1c}
+.badge-y{background:#fef3c7;color:#92400e}
+.badge-b{background:#dbeafe;color:#1d4ed8}
+.badge-gr{background:#f1f5f9;color:#64748b}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tab{flex:1;min-width:70px;text-align:center;padding:9px 6px;border:1.5px solid #e2e8f0;border-radius:8px;background:#f8fafc;font-size:12px;font-weight:600;color:#64748b;cursor:pointer}
+.tab.active{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.alert{padding:11px 15px;border-radius:9px;font-size:13px;margin-bottom:12px;border:1px solid}
+.alert-ok{background:#dcfce7;color:#15803d;border-color:#86efac}
+.alert-err{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.alert-info{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.alert-warn{background:#fef3c7;color:#92400e;border-color:#fde68a}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{border:1px solid #e2e8f0;padding:7px 8px}
+th{background:#f8fafc;font-weight:700;text-align:center;color:#475569}
+.topbar{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:11px 16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.04);flex-wrap:wrap;gap:8px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px}
+.nat-block{border:1.5px solid #e2e8f0;border-radius:9px;padding:11px;margin-bottom:9px;background:#fafbfc}
+.tbl-wrap{overflow-x:auto}
+.photo-box{width:80px;height:100px;border:2px dashed #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:#f8fafc;flex-shrink:0}
+.photo-box img{width:100%;height:100%;object-fit:cover}
+.expire-warn{background:#fef3c7;border:1.5px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px}
+.expire-danger{background:#fee2e2;border:1.5px solid #fca5a5;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:#b91c1c}
+.readonly-badge{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;padding:3px 10px;font-size:11px;color:#64748b;font-weight:600}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
+.modal-box{background:#fff;border-radius:14px;padding:20px;width:100%;max-width:400px;box-shadow:0 10px 40px rgba(0,0,0,0.2)}
+@media(max-width:480px){.grid3{grid-template-columns:1fr 1fr}.grid4{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+@media print{.no-print{display:none!important}body{background:#fff}}
+</style>
+</head>
+<body>
+<div id="app" style="max-width:800px;margin:0 auto;padding:12px"></div>
+<script>
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const SUPABASE_URL = "https://befljecxdniparqnrcgg.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5c...";
+const ADMIN_PW = "SVKSEZ@2024";
+
+const ZONES=["A","B","B1","C","D","E"];
+const NATS=["ໄທ","ຫວຽດນາມ","ຈີນ","ມຽນມາ","ກຳປູເຈຍ","ຟີລິບປິນ","ອິນໂດເນເຊຍ","ບັງກາລາເດດ","ອິນເດຍ","ເກົາຫລີ","ຍີ່ປຸ່ນ","ສິງກາໂປ","ມາເລເຊຍ","ອາເມລິກາ","ອື່ນໆ"];
+const MONTHS=["ມັງກອນ","ກຸມພາ","ມີນາ","ເມສາ","ພຶດສະພາ","ມິຖຸນາ","ກໍລະກົດ","ສິງຫາ","ກັນຍາ","ຕຸລາ","ພະຈິກ","ທັນວາ"];
+const PREFIXES=["MR","MRS","MISS","MS"];
+const STAY_OPT=["1 ເດືອນ","3 ເດືອນ","6 ເດືອນ","12 ເດືອນ"];
+
+let sb=null;
+let S={
+  view:"loading",
+  loginTab:"company",
+  loginInput:"",adminPw:"",loginPw:"",
+  error:"",msg:"",saved:false,
+  companyCode:null,companyTab:"info",
+  adminTab:"summary",workerTab:"new",workerListTab:"new",
+  companies:{},records:[],workers:[],
+  pendingContactChanges:[],
+  form:null,
+  wForm:null,
+  editingWorker:null,
+  mgForm:{name:"",nameEn:"",zone:"A",password:"",password2:""},
+  manageMsg:"",manageOk:false,
+  changePwModal:null,changePwErr:"",
+  printMode:null,
+  summaryPeriod:"month",
+  filterZone:"ALL",filterType:"new"
+};
+
+function today(){return new Date().toISOString().split("T")[0];}
+function daysUntil(d){if(!d)return null;return Math.ceil((new Date(d)-new Date())/(864e5));}
+function canEdit(ca){if(!ca)return false;return(new Date()-new Date(ca))<(90*864e5);}
+function genCode(zone){
+  const p="SVKSEZ-"+zone;
+  const n=Object.keys(S.companies).filter(k=>k.startsWith(p)).length;
+  return p+String(n+1).padStart(3,"0");
+}
+function getLatest(){
+  const l={};
+  S.records.forEach(r=>{if(!l[r.company_code]||r.date>l[r.company_code].date)l[r.company_code]=r;});
+  return Object.values(l);
+}
+function newWForm(type){
+  return{type,companyName:"",companyNameEn:"",zone:"A",photo:"",
+    prefix:"MR",firstName:"",lastName:"",nationality:"ໄທ",gender:"ຊາຍ",
+    position:"",salary:"",dob:"",
+    quotaNo:"",quotaDate:"",
+    passportNo:"",passportIssue:"",passportExpiry:"",
+    labourNo:"",labourIssue:"",labourExpiry:"",labourRound:type==="new"?1:2,
+    residenceNo:"",residenceIssue:"",residenceExpiry:"",
+    visaNo:"",visaIssue:"",visaExpiry:"",stayDuration:"12 ເດືອນ"};
+}
+function initForm(){
+  const myRecs=S.records.filter(r=>r.company_code===S.companyCode).sort((a,b)=>b.date.localeCompare(a.date));
+  const last=myRecs[0];
+  S.form={
+    prefix:last?.contact_prefix||"ທ້າວ",
+    firstName:last?.contact_first||"",
+    lastName:last?.contact_last||"",
+    role:last?.role||"ຝ່າຍບຸກຄະກອນ",roleOther:"",
+    laoMale:0,laoFemale:0,
+    foreignRows:[{nationality:"ໄທ",male:0,female:0}],
+    contactLocked:!!(last?.contact_first)
+  };
+}
+
+// ══════════════════════════════════════════
+// SUPABASE
+// ══════════════════════════════════════════
+async function initSB(){
+  S.wForm=newWForm("new");
+  if(SUPABASE_URL==="https://befljecxdniparqnrcgg.supabase.co"){S.view="setup";render();return;}
+  try{
+    sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    await loadAll();
+    S.view="login";render();
+  }catch(e){S.view="setup";render();}
+}
+async function loadAll(){
+  const[{data:cos},{data:recs},{data:wks},{data:pend}]=await Promise.all([
+    sb.from("companies").select("*"),
+    sb.from("records").select("*").order("date",{ascending:false}),
+    sb.from("workers").select("*").order("created_at",{ascending:false}),
+    sb.from("contact_changes").select("*").eq("approved",false)
+  ]);
+  S.companies={};(cos||[]).forEach(c=>S.companies[c.code]=c);
+  S.records=recs||[];S.workers=wks||[];S.pendingContactChanges=pend||[];
+}
+
+// ══════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════
+function render(){
+  const app=document.getElementById("app");
+  if(S.view==="loading"){app.innerHTML='<div style="text-align:center;padding:3rem;color:#94a3b8;font-size:16px">⏳ ກຳລັງໂຫລດ...</div>';return;}
+  if(S.view==="setup"){app.innerHTML=buildSetup();bindSetup();return;}
+  if(S.view==="login"){app.innerHTML=buildLogin();bindLogin();return;}
+  if(S.view==="company"){app.innerHTML=buildCompany();bindCompany();return;}
+  if(S.view==="admin"){app.innerHTML=buildAdmin();bindAdmin();return;}
+  if(S.view==="print"){doPrint();return;}
+}
+
+// ══════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════
+function buildSetup(){
+  return`<div style="max-width:540px;margin:0 auto;padding:1rem">
+  <div style="text-align:center;padding:2rem 0 1.5rem"><div style="font-size:40px">⚙️</div>
+  <h2 style="font-size:18px;font-weight:700;margin-top:8px">ຕັ້ງຄ່າ Supabase</h2></div>
+  <div class="card">
+    <div class="row"><div class="label">Supabase URL</div><input id="s-url" placeholder="https://xxxx.supabase.co"></div>
+    <div class="row"><div class="label">Anon Key</div><input id="s-key" placeholder="eyJhbGci..."></div>
+    <button class="btn-blue" id="btn-tsb" style="width:100%;padding:11px">ທົດລອງເຊື່ອມຕໍ່</button>
+    <div id="sb-res" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 SQL — Run ໃນ Supabase SQL Editor</div>
+    <pre id="sqlpre" style="background:#1e293b;color:#e2e8f0;padding:14px;border-radius:8px;font-size:10px;overflow-x:auto;line-height:1.7;white-space:pre-wrap">-- companies
+CREATE TABLE IF NOT EXISTS companies(
+  id SERIAL PRIMARY KEY,code TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,name_en TEXT DEFAULT '',
+  zone TEXT NOT NULL,password TEXT NOT NULL DEFAULT '1234',
+  created_at DATE DEFAULT CURRENT_DATE
+);
+-- records (ສະຖິຕິລາຍເດືອນ)
+CREATE TABLE IF NOT EXISTS records(
+  id TEXT PRIMARY KEY,company_code TEXT NOT NULL,
+  company_name TEXT,zone TEXT,date DATE NOT NULL,
+  contact_prefix TEXT,contact_first TEXT,contact_last TEXT,role TEXT,
+  lao_male INT DEFAULT 0,lao_female INT DEFAULT 0,lao_total INT DEFAULT 0,
+  foreign_rows JSONB DEFAULT '[]',foreign_total INT DEFAULT 0,grand_total INT DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- contact_changes (ຂໍປ່ຽນຜູ້ໃຫ້ຂໍ້ມູນ)
+CREATE TABLE IF NOT EXISTS contact_changes(
+  id TEXT PRIMARY KEY,company_code TEXT,
+  new_prefix TEXT,new_first TEXT,new_last TEXT,new_role TEXT,
+  approved BOOLEAN DEFAULT false,created_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- workers (ແຮງງານ ຕ.ປ — ແອດມິນເທົ່ານັ້ນ)
+CREATE TABLE IF NOT EXISTS workers(
+  id TEXT PRIMARY KEY,type TEXT NOT NULL,
+  company_name TEXT,company_name_en TEXT,zone TEXT,photo TEXT,
+  prefix TEXT,first_name TEXT,last_name TEXT,
+  nationality TEXT,gender TEXT,position TEXT,salary TEXT,dob DATE,
+  quota_no TEXT,quota_date DATE,
+  passport_no TEXT,passport_issue DATE,passport_expiry DATE,
+  labour_no TEXT,labour_issue DATE,labour_expiry DATE,labour_round INT DEFAULT 1,
+  residence_no TEXT,residence_issue DATE,residence_expiry DATE,
+  visa_no TEXT,visa_issue DATE,visa_expiry DATE,
+  stay_duration TEXT,created_at TIMESTAMPTZ DEFAULT NOW(),updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+-- RLS
+ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE contact_changes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE workers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "all_co" ON companies FOR ALL USING(true) WITH CHECK(true);
+CREATE POLICY "all_rec" ON records FOR ALL USING(true) WITH CHECK(true);
+CREATE POLICY "all_cc" ON contact_changes FOR ALL USING(true) WITH CHECK(true);
+CREATE POLICY "all_wk" ON workers FOR ALL USING(true) WITH CHECK(true);</pre>
+    <button onclick="navigator.clipboard.writeText(document.getElementById('sqlpre').innerText)" style="margin-top:10px;width:100%;padding:8px;font-size:12px">📋 ຄັດລອກ SQL</button>
+  </div></div>`;
+}
+function bindSetup(){
+  const $=id=>document.getElementById(id);
+  $("btn-tsb").onclick=async()=>{
+    const url=$("s-url").value.trim(),key=$("s-key").value.trim(),res=$("sb-res");
+    if(!url||!key){res.innerHTML='<div class="alert alert-err">ກະລຸນາໃສ່ຄ່າໃຫ້ຄົບ</div>';return;}
+    try{const t=window.supabase.createClient(url,key);const{error}=await t.from("companies").select("count",{count:"exact",head:true});if(error)throw error;
+      res.innerHTML='<div class="alert alert-ok">✅ ສຳເລັດ! ໃສ່ຄ່ານີ້ໃສ່ HTML ແລ້ວ reload</div>';
+    }catch(e){res.innerHTML='<div class="alert alert-err">❌ '+e.message+'</div>';}
+  };
+}
+
+// ══════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════
+function buildLogin(){
+  return`<div style="max-width:420px;margin:0 auto">
+  <div style="text-align:center;padding:2rem 1rem 1.5rem">
+    <div style="font-size:42px">🏭</div>
+    <h1 style="font-size:22px;font-weight:700;color:#1e3a5f;margin-top:8px">SVKSEZ</h1>
+    <p style="font-size:12px;color:#64748b;margin-top:4px">ລະບົບເກັບກຳສະຖິຕິແຮງງານ<br>ເຂດເສດຖະກິດພິເສດ ແຂວງສະຫວັນນະເຂດ</p>
+  </div>
+  <div class="tabs">
+    <button class="tab ${S.loginTab==="company"?"active":""}" id="lt-co">🏭 ບໍລິສັດ</button>
+    <button class="tab ${S.loginTab==="admin"?"active":""}" id="lt-ad">🔐 ແອດມິນ</button>
+  </div>
+  ${S.error?'<div class="alert alert-err">'+S.error+'</div>':""}
+  ${S.msg?'<div class="alert alert-ok">'+S.msg+'</div>':""}
+  ${S.loginTab==="company"?`
+  <div class="card">
+    <div class="card-title">🏭 ເຂົ້າສູ່ລະບົບ (ບໍລິສັດ)</div>
+    <div class="row"><div class="label">Username (ລະຫັດບໍລິສັດ)</div>
+      <input id="li-u" list="co-l" value="${S.loginInput}" placeholder="SVKSEZ-A001">
+      <datalist id="co-l">${Object.values(S.companies).map(c=>"<option value='"+c.code+"'>"+c.name+"</option>").join("")}</datalist></div>
+    <div class="row"><div class="label">ລະຫັດຜ່ານ</div>
+      <input type="password" id="li-pw" value="${S.loginPw}" placeholder="ລະຫັດຜ່ານ..."></div>
+    <button class="btn-blue" id="btn-cl" style="width:100%;padding:11px;font-size:14px">ເຂົ້າສູ່ລະບົບ</button>
+    <div style="text-align:center;font-size:11px;color:#94a3b8;margin-top:10px">ລະຫັດຜ່ານໄດ້ຮັບຈາກເຈົ້າໜ້າທີ່ SVKSEZ</div>
+  </div>`:`
+  <div class="card">
+    <div class="card-title">🔐 ແອດມິນ</div>
+    <div class="row"><div class="label">ລະຫັດຜ່ານ</div>
+      <input type="password" id="li-ap" value="${S.adminPw}" placeholder="ລະຫັດຜ່ານແອດມິນ..."></div>
+    <button class="btn-orange" id="btn-al" style="width:100%;padding:11px;font-size:14px">ເຂົ້າສູ່ລະບົບ</button>
+  </div>`}
+  </div>`;
+}
+function bindLogin(){
+  const $=id=>document.getElementById(id);
+  const ltco=$("lt-co");if(ltco)ltco.onclick=()=>{S.loginTab="company";S.error="";render();};
+  const ltad=$("lt-ad");if(ltad)ltad.onclick=()=>{S.loginTab="admin";S.error="";render();};
+  const lu=$("li-u");if(lu)lu.oninput=e=>S.loginInput=e.target.value;
+  const lpw=$("li-pw");if(lpw){lpw.oninput=e=>S.loginPw=e.target.value;lpw.onkeydown=e=>{if(e.key==="Enter")doCoLogin();};}
+  const lap=$("li-ap");if(lap){lap.oninput=e=>S.adminPw=e.target.value;lap.onkeydown=e=>{if(e.key==="Enter")doAdminLogin();};}
+  const bcl=$("btn-cl");if(bcl)bcl.onclick=doCoLogin;
+  const bal=$("btn-al");if(bal)bal.onclick=doAdminLogin;
+}
+function doCoLogin(){
+  const v=S.loginInput.trim(),pw=(S.loginPw||"").trim();
+  if(!v){S.error="ກະລຸນາໃສ່ Username";render();return;}
+  if(!pw){S.error="ກະລຸນາໃສ່ລະຫັດຜ່ານ";render();return;}
+  const found=Object.values(S.companies).find(c=>c.code===v);
+  if(!found){S.error="ບໍ່ພົບ Username ກະລຸນາຕິດຕໍ່ເຈົ້າໜ້າທີ່";render();return;}
+  if(found.password!==pw){S.error="ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ";render();return;}
+  S.companyCode=found.code;S.view="company";S.error="";S.loginPw="";
+  S.companyTab="info";initForm();render();
+}
+function doAdminLogin(){
+  if(S.adminPw===ADMIN_PW){S.view="admin";S.error="";render();}
+  else{S.error="ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ";render();}
+}
+
+// ══════════════════════════════════════════
+// COMPANY VIEW
+// ══════════════════════════════════════════
+function buildCompany(){
+  const co=S.companies[S.companyCode];
+  const myRecs=S.records.filter(r=>r.company_code===S.companyCode).sort((a,b)=>b.date.localeCompare(a.date));
+  return`<div>
+  <div class="topbar">
+    <div>
+      <div style="font-weight:700;font-size:14px">🏭 ${co?.name||""}</div>
+      <div style="font-size:11px;color:#64748b">${co?.name_en||""} | ${S.companyCode} | ເຂດ ${co?.zone} | <span style="color:#16a34a">● ອອນລາຍ</span></div>
+    </div>
+    <button id="btn-out">ອອກ</button>
+  </div>
+  <div class="tabs">
+    <button class="tab ${S.companyTab==="info"?"active":""}" id="ct-info">🏭 ຂໍ້ມູນ A</button>
+    <button class="tab ${S.companyTab==="form"?"active":""}" id="ct-form">📝 ສະຖິຕິ B</button>
+    <button class="tab ${S.companyTab==="hist"?"active":""}" id="ct-hist">📋 ປະຫວັດ</button>
+  </div>
+  ${S.companyTab==="info"?buildCompanyInfo(co):S.companyTab==="form"?buildForm(myRecs):buildHistory(myRecs)}
+  </div>`;
+}
+
+function buildCompanyInfo(co){
+  return`<div class="card">
+  <div class="card-title">🏭 ສ່ວນ A — ຂໍ້ມູນບໍລິສັດ <span class="readonly-badge">🔒 ອ່ານໄດ້ເທົ່ານັ້ນ</span></div>
+  <div class="alert alert-info" style="margin-bottom:14px;font-size:12px">ຂໍ້ມູນໃນສ່ວນນີ້ ບໍລິສັດສາມາດເບິ່ງໄດ້ ແຕ່ບໍ່ສາມາດແກ້ໄຂໄດ້ — ຕ້ອງຜ່ານແອດມິນ</div>
+  <div class="grid2" style="margin-bottom:10px">
+    <div><div class="label">Username</div><input readonly value="${co?.code||""}"></div>
+    <div><div class="label">ເຂດ</div><input readonly value="ເຂດ ${co?.zone||""}"></div>
+  </div>
+  <div class="grid2">
+    <div><div class="label">ຊື່ບໍລິສັດ (ລາວ)</div><input readonly value="${co?.name||""}"></div>
+    <div><div class="label">ຊື່ບໍລິສັດ (ອັງກິດ)</div><input readonly value="${co?.name_en||""}"></div>
+  </div>
+  </div>`;
+}
+
+function buildForm(myRecs){
+  const f=S.form;
+  if(!f)return'';
+  const lT=+f.laoMale + +f.laoFemale;
+  const fT=f.foreignRows.reduce((s,r)=>s+(+r.male)+(+r.female),0);
+  const prevFN=[...new Set(myRecs.map(r=>r.contact_first).filter(Boolean))];
+  const prevLN=[...new Set(myRecs.map(r=>r.contact_last).filter(Boolean))];
+  return`
+  ${S.saved?'<div class="alert alert-ok">✅ ບັນທຶກ ແລະ ສົ່ງຂໍ້ມູນສຳເລັດ!</div>':""}
+  ${S.error?'<div class="alert alert-err">'+S.error+'</div>':""}
+  <div class="card">
+    <div class="card-title">👤 ສ່ວນ B.1 — ຂໍ້ມູນຜູ້ໃຫ້ຂໍ້ມູນ
+      ${f.contactLocked?'<span class="readonly-badge">🔒 ໃສ່ແລ້ວ</span>':''}</div>
+    ${f.contactLocked?'<div class="alert alert-info" style="margin-bottom:12px;font-size:12px">ຂໍ້ມູນຜູ້ໃຫ້ຂໍ້ມູນໄດ້ໃສ່ແລ້ວ — ຖ້າຕ້ອງການປ່ຽນ ຕ້ອງຂໍອະນຸມັດຈາກແອດມິນ <button id="btn-req-change" style="font-size:11px;padding:3px 10px;margin-left:8px;background:#fef3c7;border-color:#fde68a;color:#92400e">ຂໍປ່ຽນ</button></div>':
+    '<div class="alert alert-warn" style="margin-bottom:12px;font-size:12px">⚠️ ໃສ່ຄັ້ງດຽວ — ຖ້າຈະປ່ຽນໃນອານາຄົດຕ້ອງຂໍອະນຸມັດຈາກແອດມິນ</div>'}
+    <div class="row"><div class="label">ຄຳນຳໜ້າ</div>
+      <div style="display:flex;gap:8px">
+        <button class="pfx ${f.prefix==="ທ້າວ"?"btn-active":""} ${f.contactLocked?"":"btn"}" data-p="ທ້າວ" ${f.contactLocked?"disabled":""}>ທ້າວ</button>
+        <button class="pfx ${f.prefix==="ນາງ"?"btn-active":""}" data-p="ນາງ" ${f.contactLocked?"disabled":""}>ນາງ</button>
+      </div></div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div><div class="label">ຊື່</div>
+        <input id="f-fn" list="fn-l" value="${f.firstName}" placeholder="ຊື່..." ${f.contactLocked?"readonly":""}>
+        <datalist id="fn-l">${prevFN.map(n=>"<option value='"+n+"'>").join("")}</datalist></div>
+      <div><div class="label">ນາມສະກຸນ</div>
+        <input id="f-ln" list="ln-l" value="${f.lastName}" placeholder="ນາມສະກຸນ..." ${f.contactLocked?"readonly":""}>
+        <datalist id="ln-l">${prevLN.map(n=>"<option value='"+n+"'>").join("")}</datalist></div>
+    </div>
+    <div class="row"><div class="label">ໜ້າທີ່</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        ${["ຝ່າຍບຸກຄະກອນ","ຝ່າຍບໍລິຫານ","ອື່ນໆ"].map(r=>"<button class='role-btn "+(f.role===r?"btn-active":"")+"' data-r='"+r+"' "+(f.contactLocked?"disabled":"")+">"+r+"</button>").join("")}
+      </div>
+      ${f.role==="ອື່ນໆ"&&!f.contactLocked?'<input id="f-ro" value="'+f.roleOther+'" placeholder="ຮັບຜິດຊອບກ່ຽວກັບ..." style="margin-top:8px">':""}</div>
+    <div class="row"><div class="label">ວັນທີໃຫ້ຂໍ້ມູນ</div>
+      <input readonly value="${today()}"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🇱🇦 ສ່ວນ B.3 — ສະຖິຕິແຮງງານລາວ</div>
+    <div class="grid3">
+      <div><div class="label">ຊາຍລາວ</div><input type="number" id="f-lm" min="0" value="${f.laoMale}"></div>
+      <div><div class="label">ຍິງລາວ</div><input type="number" id="f-lf" min="0" value="${f.laoFemale}"></div>
+      <div><div class="label">ລວມລາວ ✦</div><div class="stat"><div class="stat-val" style="color:#2563eb">${lT}</div></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🌏 ສ່ວນ B.4 — ສະຖິຕິແຮງງານຕ່າງປະເທດ</div>
+    <div id="nat-rows">
+    ${f.foreignRows.map((row,i)=>`<div class="nat-block">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+        <select class="ns" data-i="${i}" style="width:auto;min-width:130px">
+          ${NATS.map(n=>"<option value='"+n+"' "+(row.nationality===n?"selected":"")+">"+n+"</option>").join("")}
+        </select>
+        ${f.foreignRows.length>1?"<button class='btn-red dn' data-i='"+i+"' style='padding:4px 10px;font-size:11px'>ລຶບ</button>":""}
+      </div>
+      <div class="grid3">
+        <div><div class="label">ຊາຍ</div><input type="number" class="nm" data-i="${i}" min="0" value="${row.male}"></div>
+        <div><div class="label">ຍິງ</div><input type="number" class="nf" data-i="${i}" min="0" value="${row.female}"></div>
+        <div><div class="label">ລວມ ✦</div><div class="stat"><div class="stat-val" style="color:#2563eb;font-size:16px">${+row.male + +row.female}</div></div></div>
+      </div>
+    </div>`).join("")}
+    </div>
+    <button id="btn-an" style="width:100%;padding:9px;border:1.5px dashed #cbd5e1;background:#f8fafc;color:#64748b;margin-bottom:10px">+ ເພີ່ມສັນຊາດ</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;background:#f1f5f9;padding:10px 14px;border-radius:9px">
+      <span style="color:#64748b;font-size:13px;font-weight:600">ລວມຕ່າງປະເທດທັງໝົດ ✦</span>
+      <span style="font-size:22px;font-weight:700;color:#2563eb">${fT}</span>
+    </div>
+  </div>
+
+  <div class="grid3" style="margin-bottom:12px">
+    <div class="stat" style="border-color:#93c5fd"><div class="stat-lbl">ລາວລວມ</div><div class="stat-val" style="color:#2563eb">${lT}</div></div>
+    <div class="stat" style="border-color:#fcd34d"><div class="stat-lbl">ຕ.ປ.ລວມ</div><div class="stat-val" style="color:#d97706">${fT}</div></div>
+    <div class="stat" style="border-color:#6ee7b7"><div class="stat-lbl">ລວມທັງໝົດ</div><div class="stat-val" style="color:#16a34a">${lT+fT}</div></div>
+  </div>
+  <button class="btn-green" id="btn-sv" style="width:100%;padding:13px;font-size:15px;font-weight:700">☁️ ບັນທຶກ ແລະ ສົ່ງຂໍ້ມູນ</button>`;
+}
+
+function buildHistory(myRecs){
+  if(!myRecs.length)return'<div style="text-align:center;padding:2.5rem;color:#94a3b8">ຍັງບໍ່ມີຂໍ້ມູນ</div>';
+  return myRecs.map((r,i)=>{
+    const prev=myRecs[i+1];const diff=prev?r.grand_total-prev.grand_total:null;
+    const badge=diff===null?'':diff>0?'<span class="badge badge-g">+'+diff+' ຮັບໃໝ່</span>':diff<0?'<span class="badge badge-r">'+diff+' ອອກ</span>':'<span class="badge badge-gr">ບໍ່ປ່ຽນ</span>';
+    return`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+        <span style="font-weight:700;font-size:13px">${r.date}</span>${badge}
+      </div>
+      <div class="grid3" style="margin-bottom:8px">
+        <div class="stat"><div class="stat-lbl">ລາວຊາຍ</div><div class="stat-val" style="font-size:16px">${r.lao_male}</div></div>
+        <div class="stat"><div class="stat-lbl">ລາວຍິງ</div><div class="stat-val" style="font-size:16px">${r.lao_female}</div></div>
+        <div class="stat"><div class="stat-lbl">ລາວລວມ</div><div class="stat-val" style="font-size:16px;color:#2563eb">${r.lao_total}</div></div>
+      </div>
+      <div class="grid3">
+        <div class="stat"><div class="stat-lbl">ຕ.ປ</div><div class="stat-val" style="font-size:16px;color:#d97706">${r.foreign_total}</div></div>
+        <div class="stat"><div class="stat-lbl">ລວມ</div><div class="stat-val" style="font-size:16px;color:#16a34a">${r.grand_total}</div></div>
+        <div style="font-size:11px;color:#94a3b8;padding:4px">${(r.foreign_rows||[]).map(f=>f.nationality+":"+f.total).join(", ")}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function bindCompany(){
+  const $=id=>document.getElementById(id);
+  $("btn-out").onclick=()=>{S.view="login";S.companyCode=null;render();};
+  const ci=$("ct-info");if(ci)ci.onclick=()=>{S.companyTab="info";render();};
+  const cf=$("ct-form");if(cf)cf.onclick=()=>{S.companyTab="form";render();};
+  const ch=$("ct-hist");if(ch)ch.onclick=()=>{S.companyTab="hist";render();};
+
+  if(S.companyTab==="form"){
+    const f=S.form;
+    if(!f)return;
+    // Contact change request
+    const brc=$("btn-req-change");
+    if(brc)brc.onclick=async()=>{
+      const np=prompt("ຄຳນຳໜ້າໃໝ່ (ທ້າວ/ນາງ):");const nf=prompt("ຊື່ໃໝ່:");const nl=prompt("ນາມສະກຸນໃໝ່:");
+      if(!nf||!nl)return;
+      await sb.from("contact_changes").insert({id:Date.now().toString(),company_code:S.companyCode,new_prefix:np,new_first:nf,new_last:nl,new_role:f.role,approved:false});
+      alert("✅ ສົ່ງຄຳຂໍປ່ຽນແລ້ວ ລໍຖ້າແອດມິນອະນຸມັດ");
+    };
+    if(!f.contactLocked){
+      document.querySelectorAll(".pfx").forEach(b=>b.onclick=()=>{S.form.prefix=b.dataset.p;render();});
+      document.querySelectorAll(".role-btn").forEach(b=>b.onclick=()=>{S.form.role=b.dataset.r;render();});
+      const fn=$("f-fn");if(fn)fn.oninput=e=>S.form.firstName=e.target.value;
+      const ln=$("f-ln");if(ln)ln.oninput=e=>S.form.lastName=e.target.value;
+      const ro=$("f-ro");if(ro)ro.oninput=e=>S.form.roleOther=e.target.value;
+    }
+    const lm=$("f-lm");if(lm)lm.oninput=e=>{S.form.laoMale=e.target.value;render();};
+    const lf=$("f-lf");if(lf)lf.oninput=e=>{S.form.laoFemale=e.target.value;render();};
+    document.querySelectorAll(".ns").forEach(s=>s.onchange=e=>{S.form.foreignRows[+s.dataset.i].nationality=e.target.value;});
+    document.querySelectorAll(".nm").forEach(x=>x.oninput=e=>{S.form.foreignRows[+x.dataset.i].male=e.target.value;render();});
+    document.querySelectorAll(".nf").forEach(x=>x.oninput=e=>{S.form.foreignRows[+x.dataset.i].female=e.target.value;render();});
+    document.querySelectorAll(".dn").forEach(b=>b.onclick=()=>{S.form.foreignRows.splice(+b.dataset.i,1);render();});
+    const an=$("btn-an");if(an)an.onclick=()=>{S.form.foreignRows.push({nationality:"ໄທ",male:0,female:0});render();};
+    const sv=$("btn-sv");
+    if(sv)sv.onclick=async()=>{
+      const f=S.form;
+      if(!f.contactLocked&&!f.firstName){S.error="ກະລຸນາໃສ່ຊື່ຜູ້ໃຫ້ຂໍ້ມູນ";render();return;}
+      sv.disabled=true;sv.textContent="⏳ ກຳລັງສົ່ງ...";
+      const laoM=+f.laoMale,laoF=+f.laoFemale;
+      const fRows=f.foreignRows.map(r=>({...r,male:+r.male,female:+r.female,total:+r.male+ +r.female}));
+      const fTotal=fRows.reduce((s,r)=>s+r.total,0);
+      const co=S.companies[S.companyCode];
+      const rec={id:Date.now().toString(),company_code:S.companyCode,company_name:co?.name,zone:co?.zone,
+        date:today(),contact_prefix:f.prefix,contact_first:f.firstName,contact_last:f.lastName,
+        role:f.role==="ອື່ນໆ"?f.roleOther:f.role,
+        lao_male:laoM,lao_female:laoF,lao_total:laoM+laoF,
+        foreign_rows:fRows,foreign_total:fTotal,grand_total:laoM+laoF+fTotal};
+      const{error}=await sb.from("records").insert(rec);
+      if(error){sv.disabled=false;sv.textContent="☁️ ບັນທຶກ ແລະ ສົ່ງຂໍ້ມູນ";S.error="ສົ່ງລົ້ມເຫຼວ:"+error.message;render();return;}
+      S.records.unshift(rec);S.form.contactLocked=true;S.saved=true;S.error="";render();
+      setTimeout(()=>{S.saved=false;render();},4000);
+    };
+  }
+}
+
+// ══════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════
+function buildAdmin(){
+  const expiring=S.workers.filter(w=>{const d=daysUntil(w.labour_expiry);return d!==null&&d>=0&&d<=15;});
+  const alertsHTML=expiring.map(w=>{
+    const d=daysUntil(w.labour_expiry);
+    return'<div class="'+(d<=5?"expire-danger":"expire-warn")+'">🔔 <strong>'+w.prefix+' '+w.first_name+' '+w.last_name+'</strong> ('+w.company_name+') — ບັດໝົດອີກ <strong>'+d+' ວັນ</strong> ('+w.labour_expiry+')</div>';
+  }).join("");
+  const pending=S.pendingContactChanges;
+  const pendHTML=pending.length?'<div class="alert alert-warn">📋 ມີ <strong>'+pending.length+'</strong> ຄຳຂໍປ່ຽນຜູ້ໃຫ້ຂໍ້ມູນ ລໍຖ້າອະນຸມັດ <button id="btn-see-pend" style="font-size:11px;padding:3px 10px;margin-left:8px">ເບິ່ງ</button></div>':"";
+  const tabs=[{id:"summary",l:"📊 ສະຫຼຸບ"},{id:"workers",l:"👷 ແຮງງານ C"},{id:"monthly",l:"📅 ລາຍເດືອນ"},{id:"byzone",l:"🗺️ ຕາມເຂດ"},{id:"companies",l:"🏭 ບໍລິສັດ"},{id:"manage",l:"⚙️ ຈັດການ"}];
+  let content="";
+  if(S.adminTab==="summary")content=buildAdminSummary();
+  else if(S.adminTab==="workers")content=buildWorkerSection();
+  else if(S.adminTab==="monthly")content=buildAdminMonthly();
+  else if(S.adminTab==="byzone")content=buildAdminByZone();
+  else if(S.adminTab==="companies")content=buildAdminCompanies();
+  else if(S.adminTab==="manage")content=buildManage();
+  return`<div>
+  <div class="topbar" style="background:#fffbeb;border-color:#fde68a">
+    <div><div style="font-weight:700;color:#92400e;font-size:14px">🔐 ແອດມິນ SVKSEZ</div>
+    <div style="font-size:11px;color:#b45309">ເຂດເສດຖະກິດພິເສດ ແຂວງສະຫວັນນະເຂດ</div></div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button id="btn-ref" style="font-size:11px;padding:5px 9px">🔄</button>
+      <button id="btn-p1" style="font-size:11px;padding:5px 9px">🖨️ ລາຍງານ 1</button>
+      <button id="btn-p2" style="font-size:11px;padding:5px 9px">🖨️ ລາຍງານ 2</button>
+      <button id="btn-xlsx" class="btn-excel" style="font-size:11px;padding:5px 9px">📊 Excel</button>
+      <button id="btn-csv" style="font-size:11px;padding:5px 9px">📥 CSV</button>
+      <button id="btn-oa" style="font-size:11px">ອອກ</button>
+    </div>
+  </div>
+  ${expiring.length?"<div style='margin-bottom:10px'>"+alertsHTML+"</div>":""}
+  ${pendHTML}
+  <div class="tabs">${tabs.map(t=>"<button class='tab "+(S.adminTab===t.id?"active":"")+"' id='at-"+t.id+"'>"+t.l+"</button>").join("")}</div>
+  ${content}
+  </div>`;
+}
+
+function buildAdminSummary(){
+  const arr=getLatest();
+  const lM=arr.reduce((s,r)=>s+r.lao_male,0),lF=arr.reduce((s,r)=>s+r.lao_female,0);
+  const fM=arr.reduce((s,r)=>s+(r.foreign_rows||[]).reduce((a,f)=>a+f.male,0),0);
+  const fF=arr.reduce((s,r)=>s+(r.foreign_rows||[]).reduce((a,f)=>a+f.female,0),0);
+  const wNew=S.workers.filter(w=>w.type==="new").length;
+  const wRen=S.workers.filter(w=>w.type==="renew").length;
+  const expiring=S.workers.filter(w=>{const d=daysUntil(w.labour_expiry);return d!==null&&d>=0&&d<=15;});
+  return`
+  <div class="alert alert-info" style="margin-bottom:12px;font-size:12px">
+    🏭 ${arr.length} ບໍລິສັດ | 👷 ແຮງງານ ຕ.ປ: ໃໝ່ ${wNew} | ຕໍ່ ${wRen}
+    ${expiring.length?" | <strong style='color:#b45309'>⚠️ ໃກ້ໝົດ: "+expiring.length+"</strong>":""}
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:14px">
+    ${[["ລາວຊາຍ",lM,"#dbeafe","#1d4ed8"],["ລາວຍິງ",lF,"#dbeafe","#1d4ed8"],["ລາວລວມ",lM+lF,"#bfdbfe","#1d4ed8"],
+      ["ຕ.ປ.ຊາຍ",fM,"#fef3c7","#92400e"],["ຕ.ປ.ຍິງ",fF,"#fef3c7","#92400e"],["ຕ.ປ.ລວມ",fM+fF,"#fde68a","#92400e"],
+      ["ລວມທັງໝົດ",lM+lF+fM+fF,"#d1fae5","#065f46"]].map(([l,v,bg,c])=>
+      "<div style='background:"+bg+";border-radius:10px;padding:12px;text-align:center'>"
+      +"<div style='font-size:11px;color:"+c+";margin-bottom:4px;font-weight:600'>"+l+"</div>"
+      +"<div style='font-size:22px;font-weight:700;color:"+c+"'>"+v+"</div></div>").join("")}
+  </div>
+  <div class="card">
+    <div class="card-title">📊 ສ່ວນ B.5 — ສະຫຼຸບລວມທຸກບໍລິສັດ</div>
+    <div class="tbl-wrap"><table>
+    <thead><tr><th>ບໍລິສັດ</th><th>ເຂດ</th><th>ລາວຊາຍ</th><th>ລາວຍິງ</th><th>ລາວລວມ</th><th>ຕ.ປ.ຊາຍ</th><th>ຕ.ປ.ຍິງ</th><th>ຕ.ປ.ລວມ</th><th>ລວມ</th></tr></thead>
+    <tbody>
+    ${arr.map(r=>{const fMr=(r.foreign_rows||[]).reduce((s,f)=>s+f.male,0);const fFr=(r.foreign_rows||[]).reduce((s,f)=>s+f.female,0);
+      return"<tr><td>"+r.company_name+"</td><td style='text-align:center'>"+r.zone+"</td>"
+      +"<td style='text-align:center'>"+r.lao_male+"</td><td style='text-align:center'>"+r.lao_female+"</td><td style='text-align:center;font-weight:700'>"+r.lao_total+"</td>"
+      +"<td style='text-align:center'>"+fMr+"</td><td style='text-align:center'>"+fFr+"</td><td style='text-align:center;font-weight:700'>"+r.foreign_total+"</td>"
+      +"<td style='text-align:center;font-weight:700'>"+r.grand_total+"</td></tr>";}).join("")}
+    <tr style="font-weight:700;background:#f1f5f9"><td colspan="2">ລວມ</td>
+      <td style="text-align:center">${lM}</td><td style="text-align:center">${lF}</td><td style="text-align:center">${lM+lF}</td>
+      <td style="text-align:center">${fM}</td><td style="text-align:center">${fF}</td><td style="text-align:center">${fM+fF}</td>
+      <td style="text-align:center">${lM+lF+fM+fF}</td></tr>
+    </tbody></table></div>
+  </div>`;
+}
+
+function buildAdminByZone(){
+  const arr=getLatest();
+  const byZone={};ZONES.forEach(z=>byZone[z]=[]);
+  arr.forEach(r=>{if(byZone[r.zone])byZone[r.zone].push(r);});
+  const natMap={};
+  arr.forEach(r=>(r.foreign_rows||[]).forEach(fr=>{
+    if(!natMap[fr.nationality])natMap[fr.nationality]={male:0,female:0};
+    natMap[fr.nationality].male+=fr.male;natMap[fr.nationality].female+=fr.female;
+  }));
+  return`<div>
+  ${ZONES.map(z=>{const rows=byZone[z];if(!rows.length)return"";
+    const lM=rows.reduce((s,r)=>s+r.lao_male,0),lF=rows.reduce((s,r)=>s+r.lao_female,0),fT=rows.reduce((s,r)=>s+r.foreign_total,0);
+    return"<div class='card'><div class='card-title'>ເຂດ "+z+" — "+rows.length+" ບໍລິສັດ</div>"
+    +"<div class='grid4'>"
+    +"<div class='stat'><div class='stat-lbl'>ລາວຊາຍ</div><div class='stat-val' style='font-size:16px'>"+lM+"</div></div>"
+    +"<div class='stat'><div class='stat-lbl'>ລາວຍິງ</div><div class='stat-val' style='font-size:16px'>"+lF+"</div></div>"
+    +"<div class='stat'><div class='stat-lbl'>ລາວລວມ</div><div class='stat-val' style='font-size:16px;color:#2563eb'>"+(lM+lF)+"</div></div>"
+    +"<div class='stat'><div class='stat-lbl'>ຕ.ປ.ລວມ</div><div class='stat-val' style='font-size:16px;color:#d97706'>"+fT+"</div></div>"
+    +"</div></div>";}).join("")}
+  <div class="card"><div class="card-title">🌏 ສັນຊາດຕ່າງປະເທດລວມ (B.5.2)</div>
+  <div class="tbl-wrap"><table><thead><tr><th>ສັນຊາດ</th><th>ຊາຍ</th><th>ຍິງ</th><th>ລວມ</th></tr></thead><tbody>
+  ${Object.entries(natMap).map(([n,v])=>"<tr><td>"+n+"</td><td style='text-align:center'>"+v.male+"</td><td style='text-align:center'>"+v.female+"</td><td style='text-align:center;font-weight:700'>"+(v.male+v.female)+"</td></tr>").join("")}
+  <tr style="font-weight:700;background:#f1f5f9"><td>ລວມ</td>
+  <td style="text-align:center">${Object.values(natMap).reduce((s,v)=>s+v.male,0)}</td>
+  <td style="text-align:center">${Object.values(natMap).reduce((s,v)=>s+v.female,0)}</td>
+  <td style="text-align:center">${Object.values(natMap).reduce((s,v)=>s+v.male+v.female,0)}</td></tr>
+  </tbody></table></div></div></div>`;
+}
+
+function buildAdminMonthly(){
+  const now=new Date(),yr=now.getFullYear();
+  const byMonth={};
+  S.records.forEach(r=>{
+    const d=new Date(r.date);if(d.getFullYear()!==yr)return;
+    const m=d.getMonth();
+    if(!byMonth[m])byMonth[m]={};
+    if(!byMonth[m][r.company_code]||r.date>byMonth[m][r.company_code].date)byMonth[m][r.company_code]=r;
+  });
+  // Find new/left by comparing consecutive months
+  const monthArr=Object.keys(byMonth).sort().map(k=>({m:+k,recs:Object.values(byMonth[k])}));
+  return`<div style="font-size:12px;color:#64748b;margin-bottom:10px">ສ່ວນ B.6 — ລາຍເດືອນ ປີ ${yr}</div>`+
+  MONTHS.map((mn,mi)=>{
+    const entry=byMonth[mi];
+    if(!entry){return"<div style='padding:10px 14px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px'><span style='font-weight:600'>"+mn+"</span><span style='color:#94a3b8'>ຍັງບໍ່ມີ</span></div>";}
+    const recs=Object.values(entry);
+    const lao=recs.reduce((s,r)=>s+r.lao_total,0),for_=recs.reduce((s,r)=>s+r.foreign_total,0);
+    // auto new/leave
+    const prevM=byMonth[mi-1];
+    let newIn=0,leftOut=0;
+    if(prevM){const pTotal=Object.values(prevM).reduce((s,r)=>s+r.grand_total,0);const cTotal=lao+for_;newIn=Math.max(0,cTotal-pTotal);leftOut=Math.max(0,pTotal-cTotal);}
+    return"<div class='card' style='margin-bottom:6px'>"
+    +"<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:9px'>"
+    +"<span style='font-weight:700;font-size:13px'>"+mn+" "+yr+"</span>"
+    +"<span style='font-size:12px;color:#64748b'>"+recs.length+" ບໍລິສັດ"+(newIn?" | <span style='color:#15803d'>+"+newIn+" ຮັບໃໝ່</span>":"")+(leftOut?" | <span style='color:#b91c1c'>-"+leftOut+" ອອກ</span>":"")+"</span>"
+    +"</div><div class='grid3'>"
+    +"<div class='stat'><div class='stat-lbl'>ລາວ</div><div class='stat-val' style='font-size:16px;color:#2563eb'>"+lao+"</div></div>"
+    +"<div class='stat'><div class='stat-lbl'>ຕ.ປ</div><div class='stat-val' style='font-size:16px;color:#d97706'>"+for_+"</div></div>"
+    +"<div class='stat'><div class='stat-lbl'>ລວມ</div><div class='stat-val' style='font-size:16px;color:#16a34a'>"+(lao+for_)+"</div></div>"
+    +"</div></div>";
+  }).join("");
+}
+
+function buildAdminCompanies(){
+  const latest={};S.records.forEach(r=>{if(!latest[r.company_code]||r.date>latest[r.company_code].date)latest[r.company_code]=r;});
+  return`<div class="tbl-wrap"><table>
+  <thead><tr><th>#</th><th>Username</th><th>ຊື່ (ລາວ)</th><th>ຊື່ (EN)</th><th>ເຂດ</th><th>ລາວ</th><th>ຕ.ປ</th><th>ລວມ</th><th>ອັບເດດ</th></tr></thead>
+  <tbody>
+  ${Object.values(S.companies).map((co,i)=>{const r=latest[co.code];
+    return"<tr><td style='text-align:center'>"+(i+1)+"</td><td style='font-size:10px'>"+co.code+"</td>"
+    +"<td>"+co.name+"</td><td style='font-size:11px'>"+( co.name_en||"-")+"</td><td style='text-align:center'>"+co.zone+"</td>"
+    +"<td style='text-align:center;font-weight:700'>"+(r?.lao_total??"-")+"</td>"
+    +"<td style='text-align:center'>"+(r?.foreign_total??"-")+"</td>"
+    +"<td style='text-align:center;font-weight:700'>"+(r?.grand_total??"-")+"</td>"
+    +"<td style='text-align:center;font-size:10px;color:#94a3b8'>"+(r?.date??"-")+"</td></tr>";}).join("")}
+  </tbody></table></div>`;
+}
+
+// ══════════════════════════════════════════
+// WORKER SECTION (C — ແອດມິນ)
+// ══════════════════════════════════════════
+function buildWorkerSection(){
+  const wTabs=[{id:"new",l:"➕ ໃໝ່"},{id:"renew",l:"🔄 ຕໍ່ອາຍຸ"},{id:"list",l:"📋 ລາຍຊື່ ("+S.workers.length+")"}];
+  return`<div>
+  <div class="alert alert-warn" style="margin-bottom:12px;font-size:12px">🔒 ສ່ວນ C — ສະເພາະແອດມິນ ສາມາດເຂົ້າເຖິງ ແລະ ແກ້ໄຂໄດ້</div>
+  <div class="tabs">${wTabs.map(t=>"<button class='tab "+(S.workerTab===t.id?"active":"")+"' id='wt-"+t.id+"'>"+t.l+"</button>").join("")}</div>
+  ${S.workerTab==="list"?buildWorkerList():buildWorkerForm(S.workerTab)}
+  </div>`;
+}
+
+function buildWorkerForm(type){
+  const f=S.wForm||newWForm(type);
+  const isNew=type==="new";
+  const coNames=[...new Set(S.workers.map(w=>w.company_name).filter(Boolean))];
+  const positions=[...new Set(S.workers.map(w=>w.position).filter(Boolean))];
+  return`
+  ${S.saved?'<div class="alert alert-ok">✅ ບັນທຶກສຳເລັດ!</div>':""}
+  ${S.error?'<div class="alert alert-err">'+S.error+'</div>':""}
+  <div class="card">
+    <div class="card-title">🏭 ຂໍ້ມູນບໍລິສັດ (C.${isNew?"1":"2"}.1-2)</div>
+    <div class="grid2">
+      <div><div class="label req">ຊື່ບໍລິສັດ (ລາວ)</div>
+        <input id="w-co" list="co-n" value="${f.companyName}" placeholder="ຊື່ (ລາວ)...">
+        <datalist id="co-n">${coNames.map(n=>"<option value='"+n+"'>").join("")}</datalist></div>
+      <div><div class="label">ຊື່ (ອັງກິດ)</div><input id="w-coen" value="${f.companyNameEn}" placeholder="Company name EN..."></div>
+    </div>
+    <div class="row" style="margin-top:8px"><div class="label req">ເຂດ</div>
+      <select id="w-zone">${ZONES.map(z=>"<option value='"+z+"' "+(f.zone===z?"selected":"")+">ເຂດ "+z+"</option>").join("")}</select></div>
+  </div>
+  <div class="card">
+    <div class="card-title">👤 ຂໍ້ມູນສ່ວນຕົວ (C.${isNew?"1":"2"}.3-10)</div>
+    <div class="row"><div class="label">ຮູບ 3x4</div>
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div class="photo-box" onclick="document.getElementById('ph-inp').click()">
+          ${f.photo?"<img src='"+f.photo+"' alt='photo'>":'<span style="font-size:24px;color:#94a3b8">📷</span>'}
+        </div>
+        <input type="file" id="ph-inp" accept="image/*" style="display:none">
+        <div style="font-size:11px;color:#64748b;margin-top:4px">ກົດຮູບເພື່ອອັບໂຫລດ</div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div><div class="label req">ຄຳນຳໜ້າ</div>
+        <select id="w-pfx">${PREFIXES.map(p=>"<option value='"+p+"' "+(f.prefix===p?"selected":"")+">"+p+"</option>").join("")}</select></div>
+      <div><div class="label req">ເພດ</div>
+        <select id="w-gen"><option value="ຊາຍ" ${f.gender==="ຊາຍ"?"selected":""}>ຊາຍ</option><option value="ຍິງ" ${f.gender==="ຍິງ"?"selected":""}>ຍິງ</option></select></div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div><div class="label req">ຊື່</div><input id="w-fn" value="${f.firstName}" placeholder="First name..."></div>
+      <div><div class="label req">ນາມສະກຸນ</div><input id="w-ln" value="${f.lastName}" placeholder="Last name..."></div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div><div class="label req">ສັນຊາດ</div>
+        <select id="w-nat">${NATS.map(n=>"<option value='"+n+"' "+(f.nationality===n?"selected":"")+">"+n+"</option>").join("")}</select></div>
+      <div><div class="label">ວັນເກີດ</div><input type="date" id="w-dob" value="${f.dob}"></div>
+    </div>
+    <div class="grid2">
+      <div><div class="label">ຕຳແໜ່ງ</div>
+        <input id="w-pos" list="pos-l" value="${f.position}" placeholder="ຕຳແໜ່ງ...">
+        <datalist id="pos-l">${positions.map(p=>"<option value='"+p+"'>").join("")}</datalist></div>
+      <div><div class="label">ເງິນເດືອນ (ກີບ)</div><input id="w-sal" type="number" value="${f.salary}" placeholder="0"></div>
+    </div>
+  </div>
+  ${isNew?`<div class="card">
+    <div class="card-title">📄 ໂຄຕາປະຈຳປີ (C.1.11)</div>
+    <div class="grid2">
+      <div><div class="label">ເລກທີ</div><input id="w-qno" value="${f.quotaNo}" placeholder="ເລກທີ..."></div>
+      <div><div class="label">ວັນທີອອກ</div><input type="date" id="w-qdt" value="${f.quotaDate}"></div>
+    </div>
+  </div>`:""}
+  <div class="card">
+    <div class="card-title">🛂 ໜັງສືເດີນທາງ (Passport)</div>
+    <div class="grid3">
+      <div><div class="label">ເລກທີ</div><input id="w-pno" value="${f.passportNo}" placeholder="ເລກທີ..."></div>
+      <div><div class="label">ວັນທີອອກ</div><input type="date" id="w-pis" value="${f.passportIssue}"></div>
+      <div><div class="label">ໝົດກຳນົດ</div><input type="date" id="w-pex" value="${f.passportExpiry}"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">💳 ບັດແຮງງານ</div>
+    <div class="grid3" style="margin-bottom:10px">
+      <div><div class="label">ເລກທີ</div><input id="w-lno" value="${f.labourNo}" placeholder="ເລກທີ..."></div>
+      <div><div class="label">ວັນທີອອກ</div><input type="date" id="w-lis" value="${f.labourIssue}"></div>
+      <div><div class="label">ໝົດກຳນົດ</div><input type="date" id="w-lex" value="${f.labourExpiry}"></div>
+    </div>
+    <div><div class="label">ອອກຄັ້ງທີ</div>
+      ${isNew?'<div style="padding:8px 12px;background:#f1f5f9;border-radius:7px;font-weight:700;color:#2563eb">ຄັ້ງທີ 1 (ໃໝ່ — ກຳນົດຕາຍໂຕ)</div>'
+      :'<select id="w-lrd">'+[2,3,4,5].map(n=>"<option value='"+n+"' "+(f.labourRound===n?"selected":"")+">ຄັ້ງທີ "+n+"</option>").join("")+"</select>"}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🏠 ບັດພັກເຊົາ</div>
+    <div class="grid3">
+      <div><div class="label">ເລກທີ</div><input id="w-rno" value="${f.residenceNo}" placeholder="ເລກທີ..."></div>
+      <div><div class="label">ວັນທີອອກ</div><input type="date" id="w-ris" value="${f.residenceIssue}"></div>
+      <div><div class="label">ໝົດກຳນົດ</div><input type="date" id="w-rex" value="${f.residenceExpiry}"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🗺️ ວີຊ່າ (Visa)</div>
+    <div class="grid3" style="margin-bottom:10px">
+      <div><div class="label">ເລກທີ</div><input id="w-vno" value="${f.visaNo}" placeholder="ເລກທີ..."></div>
+      <div><div class="label">ວັນທີອອກ</div><input type="date" id="w-vis" value="${f.visaIssue}"></div>
+      <div><div class="label">ໝົດກຳນົດ</div><input type="date" id="w-vex" value="${f.visaExpiry}"></div>
+    </div>
+    <div><div class="label">ກຳນົດຢູ່ລາວ</div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        ${STAY_OPT.map(s=>"<button class='stay-btn "+(f.stayDuration===s?"btn-active":"")+"' data-s='"+s+"'>"+s+"</button>").join("")}
+      </div>
+    </div>
+  </div>
+  <button class="btn-purple" id="btn-wsv" style="width:100%;padding:13px;font-size:15px;font-weight:700">
+    💾 ${S.editingWorker?"ບັນທຶກການແກ້ໄຂ":isNew?"ບັນທຶກແຮງງານໃໝ່":"ບັນທຶກຕໍ່ອາຍຸ"}
+  </button>
+  ${S.editingWorker?'<button id="btn-cancel-edit" style="width:100%;padding:10px;margin-top:8px;color:#64748b">ຍົກເລີກການແກ້ໄຂ</button>':""}`;
+}
+
+function buildWorkerList(){
+  // C.4 Summary tabs
+  const sumTabs=[{id:"month",l:"ລາຍເດືອນ"},{id:"half",l:"6 ເດືອນ"},{id:"year",l:"ລາຍປີ"},{id:"all",l:"ລວມທັງໝົດ"}];
+  const typeTabs=[{id:"new",l:"➕ ໃໝ່"},{id:"renew",l:"🔄 ຕໍ່ອາຍຸ"}];
+  const workers=S.workers.filter(w=>w.type===S.workerListTab);
+
+  // Group by zone then company
+  const byZoneCo={};
+  workers.forEach(w=>{
+    const k=w.zone+"|"+w.company_name;
+    if(!byZoneCo[k])byZoneCo[k]={zone:w.zone,company:w.company_name,workers:[]};
+    byZoneCo[k].workers.push(w);
+  });
+
+  let listHTML='<div style="font-size:12px;color:#64748b;margin-bottom:8px">C.4 — ສະຫຼຸບ'+workers.length+' ຄົນ | ຍິງ: '+workers.filter(w=>w.gender==="ຍິງ").length+' | ຊາຍ: '+workers.filter(w=>w.gender==="ຊາຍ").length+'</div>';
+
+  Object.entries(byZoneCo).sort().forEach(([k,g])=>{
+    const females=g.workers.filter(w=>w.gender==="ຍິງ").sort((a,b)=>a.last_name.localeCompare(b.last_name));
+    const males=g.workers.filter(w=>w.gender==="ຊາຍ").sort((a,b)=>a.last_name.localeCompare(b.last_name));
+    const sorted=[...females,...males];
+    listHTML+="<div class='card' style='margin-bottom:8px'>"
+    +"<div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px'>"
+    +"<div><span style='font-weight:700'>ເຂດ "+g.zone+"</span> — "+g.company+"</div>"
+    +"<div style='font-size:12px;color:#64748b'>ລວມ: "+g.workers.length+" | ຍ: "+females.length+" | ຊ: "+males.length+"</div>"
+    +"</div>";
+    sorted.forEach((w,i)=>{
+      const lDays=daysUntil(w.labour_expiry);
+      const expired=lDays!==null&&lDays<0;
+      const warn=lDays!==null&&lDays>=0&&lDays<=15;
+      const editable=canEdit(w.created_at);
+      listHTML+="<div style='display:flex;gap:10px;align-items:flex-start;padding:8px;border-radius:8px;margin-bottom:6px;background:"+(expired?"#fff1f2":warn?"#fffbeb":"#f8fafc")+";border:1px solid "+(expired?"#fca5a5":warn?"#fde68a":"#e2e8f0")+"'>"
+      +"<div style='width:36px;height:45px;border-radius:5px;overflow:hidden;background:#f1f5f9;flex-shrink:0'>"
+      +(w.photo?"<img src='"+w.photo+"' style='width:100%;height:100%;object-fit:cover'>":"<div style='display:flex;align-items:center;justify-content:center;height:100%;font-size:16px'>👤</div>")+"</div>"
+      +"<div style='flex:1;min-width:0'>"
+      +"<div style='display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px'>"
+      +"<div style='font-weight:700;font-size:13px'>"+(i+1)+". "+w.prefix+" "+w.first_name+" "+w.last_name+"</div>"
+      +"<div style='display:flex;gap:4px'>"
+      +(w.gender==="ຍິງ"?"<span class='badge badge-r'>ຍິງ</span>":"<span class='badge badge-b'>ຊາຍ</span>")
+      +(expired?"<span class='badge badge-r'>ໝົດກຳນົດ</span>":warn?"<span class='badge badge-y'>ໃກ້ໝົດ "+lDays+"ວ</span>":"")
+      +"</div></div>"
+      +"<div style='font-size:11px;color:#64748b'>"+w.nationality+" | "+( w.position||"-")+"</div>"
+      +"<div style='font-size:11px;color:#94a3b8;margin-top:3px'>💳 ບັດ: "+(w.labour_expiry||"-")+" (ຄັ້ງ "+w.labour_round+") | 🛂 Passport: "+(w.passport_expiry||"-")+"</div>"
+      +(editable?"<button class='btn-edit-w' data-id='"+w.id+"' style='font-size:11px;padding:3px 10px;margin-top:5px;background:#dbeafe;color:#1d4ed8;border-color:#93c5fd'>✏️ ແກ້ໄຂ</button>"
+      :"<div style='font-size:11px;color:#94a3b8;margin-top:4px'>🔒 ເກີນ 3 ເດືອນ ແກ້ໄຂບໍ່ໄດ້</div>")
+      +"</div></div>";
+    });
+    listHTML+="</div>";
+  });
+  if(!workers.length)listHTML+='<div style="text-align:center;padding:2rem;color:#94a3b8">ຍັງບໍ່ມີຂໍ້ມູນ</div>';
+
+  return`<div>
+  <div class="tabs">${typeTabs.map(t=>"<button class='tab "+(S.workerListTab===t.id?"active":"")+"' id='wlt-"+t.id+"'>"+t.l+"</button>").join("")}</div>
+  <div style="margin-bottom:10px"><input id="w-srch" placeholder="ຄົ້ນຫາ ຊື່/ນາມສະກຸນ/ສັນຊາດ/ບໍລິສັດ..." style="width:100%"></div>
+  <div id="wlist-content">${listHTML}</div>
+  </div>`;
+}
+
+function buildManage(){
+  const cos=Object.values(S.companies);
+  const mg=S.mgForm;
+  return`<div>
+  <div class="card">
+    <div class="card-title">➕ ລົງທະບຽນບໍລິສັດໃໝ່</div>
+    ${S.manageMsg?'<div class="alert '+(S.manageOk?"alert-ok":"alert-err")+'">'+S.manageMsg+'</div>':""}
+    <div class="grid2" style="margin-bottom:10px">
+      <div><div class="label req">ຊື່ (ລາວ)</div><input id="mg-name" value="${mg.name}" placeholder="ຊື່ລາວ..."></div>
+      <div><div class="label">ຊື່ (ອັງກິດ)</div><input id="mg-en" value="${mg.nameEn}" placeholder="English name..."></div>
+    </div>
+    <div class="grid2" style="margin-bottom:10px">
+      <div><div class="label req">ເຂດ</div>
+        <select id="mg-zone">${ZONES.map(z=>"<option value='"+z+"' "+(mg.zone===z?"selected":"")+">ເຂດ "+z+"</option>").join("")}</select></div>
+      <div><div class="label req">ລະຫັດຜ່ານ</div><input id="mg-pw" type="text" value="${mg.password}" placeholder="ຕັ້ງລະຫັດ..."></div>
+    </div>
+    <div class="row"><div class="label req">ຢືນຢັນລະຫັດ</div><input id="mg-pw2" type="text" value="${mg.password2}" placeholder="ຢືນຢັນ..."></div>
+    <button class="btn-green" id="btn-mg-sv" style="width:100%;padding:10px;font-size:14px">➕ ລົງທະບຽນ</button>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 ລາຍຊື່ທຸກບໍລິສັດ (${cos.length})</div>
+    <div class="tbl-wrap"><table>
+    <thead><tr><th>#</th><th>Username</th><th>ຊື່ (ລາວ)</th><th>ຊື່ (EN)</th><th>ເຂດ</th><th>ລ/ຜ່ານ</th><th></th></tr></thead>
+    <tbody>
+    ${cos.map((co,i)=>"<tr><td style='text-align:center'>"+(i+1)+"</td><td style='font-size:10px'>"+co.code+"</td><td>"+co.name+"</td><td style='font-size:11px'>"+(co.name_en||"-")+"</td><td style='text-align:center'>"+co.zone+"</td><td style='text-align:center;font-weight:700;font-size:11px'>"+(co.password||"-")+"</td><td style='text-align:center'><button class='btn-chpw' data-code='"+co.code+"' style='font-size:10px;padding:3px 8px;background:#fef3c7;color:#92400e;border-color:#fde68a'>🔑 ປ່ຽນ</button></td></tr>").join("")}
+    </tbody></table></div>
+  </div>
+  ${S.changePwModal?`<div class="modal-bg"><div class="modal-box">
+    <div style="font-weight:700;margin-bottom:4px">🔑 ປ່ຽນລະຫັດ — ${S.changePwModal.name}</div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:12px">${S.changePwModal.code}</div>
+    <div class="row"><div class="label">ລະຫັດໃໝ່</div><input id="cpw-n" type="text" placeholder="ລະຫັດໃໝ່..."></div>
+    <div class="row"><div class="label">ຢືນຢັນ</div><input id="cpw-n2" type="text" placeholder="ຢືນຢັນ..."></div>
+    ${S.changePwErr?'<div class="alert alert-err">'+S.changePwErr+'</div>':""}
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button id="btn-cpw-c" style="flex:1;padding:10px">ຍົກເລີກ</button>
+      <button class="btn-blue" id="btn-cpw-s" style="flex:2;padding:10px">💾 ບັນທຶກ</button>
+    </div>
+  </div></div>`:""}
+  </div>`;
+}
+
+function bindAdmin(){
+  const $=id=>document.getElementById(id);
+  $("btn-oa").onclick=()=>{S.view="login";S.adminPw="";render();};
+  $("btn-ref").onclick=async()=>{$("btn-ref").textContent="⏳";await loadAll();render();};
+  $("btn-p1").onclick=()=>{S.printMode="report1";S.view="print";render();};
+  $("btn-p2").onclick=()=>{S.printMode="report2";S.view="print";render();};
+  $("btn-xlsx").onclick=exportXLSX;
+  $("btn-csv").onclick=exportCSV;
+  ["summary","workers","monthly","byzone","companies","manage"].forEach(t=>{
+    const el=$("at-"+t);if(el)el.onclick=()=>{S.adminTab=t;render();};
+  });
+  const bsp=$("btn-see-pend");
+  if(bsp)bsp.onclick=()=>showPendingModal();
+
+  if(S.adminTab==="manage"){bindManage();return;}
+  if(S.adminTab==="workers"){
+    ["new","renew","list"].forEach(t=>{
+      const el=$("wt-"+t);if(el)el.onclick=()=>{S.workerTab=t;S.wForm=newWForm(t==="list"?"new":t);S.editingWorker=null;S.error="";S.saved=false;render();};
+    });
+    if(S.workerTab==="list"){
+      ["new","renew"].forEach(t=>{const el=$("wlt-"+t);if(el)el.onclick=()=>{S.workerListTab=t;render();};});
+      const srch=$("w-srch");
+      if(srch)srch.oninput=e=>{
+        const q=e.target.value.toLowerCase();
+        document.querySelectorAll("#wlist-content [data-id]").forEach(card=>{
+          const txt=card.innerText.toLowerCase();card.parentElement.style.display=txt.includes(q)?"":"none";
+        });
+      };
+      document.querySelectorAll(".btn-edit-w").forEach(b=>b.onclick=()=>{
+        const w=S.workers.find(x=>x.id===b.dataset.id);if(!w)return;
+        S.wForm={type:w.type,companyName:w.company_name,companyNameEn:w.company_name_en||"",zone:w.zone,photo:w.photo||"",
+          prefix:w.prefix,firstName:w.first_name,lastName:w.last_name,nationality:w.nationality,gender:w.gender,
+          position:w.position||"",salary:w.salary||"",dob:w.dob||"",
+          quotaNo:w.quota_no||"",quotaDate:w.quota_date||"",
+          passportNo:w.passport_no||"",passportIssue:w.passport_issue||"",passportExpiry:w.passport_expiry||"",
+          labourNo:w.labour_no||"",labourIssue:w.labour_issue||"",labourExpiry:w.labour_expiry||"",labourRound:w.labour_round||1,
+          residenceNo:w.residence_no||"",residenceIssue:w.residence_issue||"",residenceExpiry:w.residence_expiry||"",
+          visaNo:w.visa_no||"",visaIssue:w.visa_issue||"",visaExpiry:w.visa_expiry||"",stayDuration:w.stay_duration||"12 ເດືອນ"};
+        S.editingWorker=w.id;S.workerTab=w.type;render();
+      });
+      return;
+    }
+    bindWorkerForm();
+  }
+}
+
+function bindWorkerForm(){
+  const $=id=>document.getElementById(id);
+  const f=S.wForm;
+  const strFields=[["w-co","companyName"],["w-coen","companyNameEn"],["w-fn","firstName"],["w-ln","lastName"],["w-pos","position"],["w-sal","salary"],["w-qno","quotaNo"],["w-pno","passportNo"],["w-lno","labourNo"],["w-rno","residenceNo"],["w-vno","visaNo"]];
+  strFields.forEach(([id,key])=>{const el=$(id);if(el)el.oninput=e=>S.wForm[key]=e.target.value;});
+  const selFields=[["w-zone","zone"],["w-pfx","prefix"],["w-gen","gender"],["w-nat","nationality"],["w-lrd","labourRound"]];
+  selFields.forEach(([id,key])=>{const el=$(id);if(el)el.onchange=e=>S.wForm[key]=e.target.value;});
+  const dateFields=[["w-dob","dob"],["w-qdt","quotaDate"],["w-pis","passportIssue"],["w-pex","passportExpiry"],["w-lis","labourIssue"],["w-lex","labourExpiry"],["w-ris","residenceIssue"],["w-rex","residenceExpiry"],["w-vis","visaIssue"],["w-vex","visaExpiry"]];
+  dateFields.forEach(([id,key])=>{const el=$(id);if(el)el.onchange=e=>S.wForm[key]=e.target.value;});
+  document.querySelectorAll(".stay-btn").forEach(b=>b.onclick=()=>{S.wForm.stayDuration=b.dataset.s;render();});
+  const pi=$("ph-inp");if(pi)pi.onchange=e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{S.wForm.photo=ev.target.result;render();};r.readAsDataURL(file);};
+  const ce=$("btn-cancel-edit");if(ce)ce.onclick=()=>{S.editingWorker=null;S.wForm=newWForm(S.workerTab);render();};
+  const sv=$("btn-wsv");
+  if(sv)sv.onclick=async()=>{
+    const f=S.wForm;
+    if(!f.companyName||!f.firstName||!f.lastName){S.error="ກະລຸນາໃສ່ຂໍ້ມູນທີ່ຈຳເປັນ (*)";render();return;}
+    sv.disabled=true;sv.textContent="⏳...";
+    const isNew=S.workerTab==="new";
+    const rec={id:S.editingWorker||Date.now().toString(),type:S.workerTab,
+      company_name:f.companyName,company_name_en:f.companyNameEn,zone:f.zone,photo:f.photo,
+      prefix:f.prefix,first_name:f.firstName,last_name:f.lastName,nationality:f.nationality,gender:f.gender,
+      position:f.position,salary:f.salary,dob:f.dob||null,
+      quota_no:f.quotaNo,quota_date:f.quotaDate||null,
+      passport_no:f.passportNo,passport_issue:f.passportIssue||null,passport_expiry:f.passportExpiry||null,
+      labour_no:f.labourNo,labour_issue:f.labourIssue||null,labour_expiry:f.labourExpiry||null,
+      labour_round:isNew?1:(+f.labourRound||2),
+      residence_no:f.residenceNo,residence_issue:f.residenceIssue||null,residence_expiry:f.residenceExpiry||null,
+      visa_no:f.visaNo,visa_issue:f.visaIssue||null,visa_expiry:f.visaExpiry||null,
+      stay_duration:f.stayDuration,updated_at:new Date().toISOString()};
+    let error;
+    if(S.editingWorker){
+      ({error}=await sb.from("workers").update(rec).eq("id",S.editingWorker));
+      if(!error){const idx=S.workers.findIndex(w=>w.id===S.editingWorker);if(idx>=0)S.workers[idx]={...S.workers[idx],...rec};}
+    }else{
+      rec.created_at=new Date().toISOString();
+      ({error}=await sb.from("workers").insert(rec));
+      if(!error)S.workers.unshift(rec);
+    }
+    if(error){sv.disabled=false;sv.textContent="💾 ບັນທຶກ";S.error="ລົ້ມເຫຼວ:"+error.message;render();return;}
+    S.editingWorker=null;S.wForm=newWForm(S.workerTab);S.saved=true;S.error="";render();
+    setTimeout(()=>{S.saved=false;render();},3000);
+  };
+}
+
+function bindManage(){
+  const $=id=>document.getElementById(id);
+  const mg=S.mgForm;
+  const mn=$("mg-name");if(mn)mn.oninput=e=>S.mgForm.name=e.target.value;
+  const me=$("mg-en");if(me)me.oninput=e=>S.mgForm.nameEn=e.target.value;
+  const mz=$("mg-zone");if(mz)mz.onchange=e=>S.mgForm.zone=e.target.value;
+  const mp=$("mg-pw");if(mp)mp.oninput=e=>S.mgForm.password=e.target.value;
+  const mp2=$("mg-pw2");if(mp2)mp2.oninput=e=>S.mgForm.password2=e.target.value;
+  const sv=$("btn-mg-sv");
+  if(sv)sv.onclick=async()=>{
+    const f=S.mgForm;
+    if(!f.name.trim()){S.manageMsg="ກະລຸນາໃສ່ຊື່";S.manageOk=false;render();return;}
+    if(!f.password.trim()){S.manageMsg="ກະລຸນາໃສ່ລະຫັດຜ່ານ";S.manageOk=false;render();return;}
+    if(f.password!==f.password2){S.manageMsg="ລະຫັດຜ່ານບໍ່ກົງກັນ";S.manageOk=false;render();return;}
+    sv.disabled=true;sv.textContent="⏳...";
+    const code=genCode(f.zone);
+    const{error}=await sb.from("companies").insert({code,name:f.name.trim(),name_en:f.nameEn.trim(),zone:f.zone,password:f.password,created_at:today()});
+    if(error){S.manageMsg="ລົ້ມເຫຼວ:"+error.message;S.manageOk=false;sv.disabled=false;sv.textContent="➕ ລົງທະບຽນ";render();return;}
+    S.companies[code]={code,name:f.name.trim(),name_en:f.nameEn.trim(),zone:f.zone,password:f.password};
+    S.mgForm={name:"",nameEn:"",zone:"A",password:"",password2:""};
+    S.manageMsg="✅ ສຳເລັດ! Username: "+code+" | ລ/ຜ່ານ: "+f.password;S.manageOk=true;render();
+  };
+  document.querySelectorAll(".btn-chpw").forEach(b=>b.onclick=()=>{const co=S.companies[b.dataset.code];S.changePwModal={code:co.code,name:co.name};S.changePwErr="";render();});
+  const cc=$("btn-cpw-c");if(cc)cc.onclick=()=>{S.changePwModal=null;render();};
+  const cs=$("btn-cpw-s");
+  if(cs)cs.onclick=async()=>{
+    const n=$("cpw-n")?.value.trim(),n2=$("cpw-n2")?.value.trim();
+    if(!n){S.changePwErr="ກະລຸນາໃສ່ລະຫັດ";render();return;}
+    if(n!==n2){S.changePwErr="ບໍ່ກົງກັນ";render();return;}
+    cs.disabled=true;cs.textContent="⏳...";
+    const{error}=await sb.from("companies").update({password:n}).eq("code",S.changePwModal.code);
+    if(error){S.changePwErr="ລົ້ມເຫຼວ:"+error.message;cs.disabled=false;cs.textContent="💾 ບັນທຶກ";render();return;}
+    S.companies[S.changePwModal.code].password=n;S.changePwModal=null;
+    S.manageMsg="✅ ປ່ຽນລະຫັດສຳເລັດ!";S.manageOk=true;render();
+    setTimeout(()=>{S.manageMsg="";render();},4000);
+  };
+}
+
+function showPendingModal(){
+  const pend=S.pendingContactChanges;
+  if(!pend.length)return;
+  const html=pend.map(p=>`
+    <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px">
+      <div style="font-size:12px;color:#64748b">${p.company_code}</div>
+      <div style="font-weight:600">${p.new_prefix} ${p.new_first} ${p.new_last}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button onclick="approveContact('${p.id}','${p.company_code}','${p.new_prefix}','${p.new_first}','${p.new_last}','${p.new_role||""}')" style="flex:1;padding:6px;background:#dcfce7;color:#15803d;border-color:#86efac;border-radius:6px;cursor:pointer;font-family:inherit">✅ ອະນຸມັດ</button>
+        <button onclick="rejectContact('${p.id}')" style="flex:1;padding:6px;background:#fee2e2;color:#b91c1c;border-color:#fca5a5;border-radius:6px;cursor:pointer;font-family:inherit">❌ ປະຕິເສດ</button>
+      </div>
+    </div>`).join("");
+  const modal=document.createElement("div");modal.className="modal-bg";modal.id="pend-modal";
+  modal.innerHTML=`<div class="modal-box"><div style="font-weight:700;margin-bottom:12px">📋 ຄຳຂໍປ່ຽນຜູ້ໃຫ້ຂໍ້ມູນ</div>${html}<button onclick="document.getElementById('pend-modal').remove()" style="width:100%;padding:8px;margin-top:8px">ປິດ</button></div>`;
+  document.body.appendChild(modal);
+}
+async function approveContact(id,code,prefix,first,last,role){
+  await sb.from("contact_changes").update({approved:true}).eq("id",id);
+  // Update the latest record's contact info
+  const latestRec=S.records.filter(r=>r.company_code===code).sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if(latestRec){await sb.from("records").update({contact_prefix:prefix,contact_first:first,contact_last:last,role}).eq("id",latestRec.id);}
+  S.pendingContactChanges=S.pendingContactChanges.filter(p=>p.id!==id);
+  await loadAll();document.getElementById("pend-modal")?.remove();alert("✅ ອະນຸມັດສຳເລັດ");render();
+}
+async function rejectContact(id){
+  await sb.from("contact_changes").delete().eq("id",id);
+  S.pendingContactChanges=S.pendingContactChanges.filter(p=>p.id!==id);
+  document.getElementById("pend-modal")?.remove();alert("❌ ປະຕິເສດແລ້ວ");render();
+}
+
+// ══════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════
+function exportCSV(){
+  const arr=getLatest();
+  const rows=[["ລະຫັດ","ຊື່ (ລາວ)","ຊື່ (EN)","ເຂດ","ວັນທີ","ລາວຊາຍ","ລາວຍິງ","ລາວລວມ","ຕ.ປ.ລວມ","ລວມ"]];
+  arr.forEach(r=>{const co=S.companies[r.company_code];rows.push([r.company_code,r.company_name,co?.name_en||"",r.zone,r.date,r.lao_male,r.lao_female,r.lao_total,r.foreign_total,r.grand_total]);});
+  const csv="\uFEFF"+rows.map(r=>r.join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));a.download="SVKSEZ_"+today()+".csv";a.click();
+}
+
+function exportXLSX(){
+  if(typeof XLSX==="undefined"){alert("ກຳລັງໂຫລດ SheetJS...");return;}
+  const wb=XLSX.utils.book_new();
+  const now=new Date(),mn=MONTHS[now.getMonth()],yr=now.getFullYear();
+  const arr=getLatest();
+  const natMap={};
+  arr.forEach(r=>(r.foreign_rows||[]).forEach(fr=>{if(!natMap[fr.nationality])natMap[fr.nationality]={male:0,female:0};natMap[fr.nationality].male+=fr.male;natMap[fr.nationality].female+=fr.female;}));
+  const lMT=arr.reduce((s,r)=>s+r.lao_male,0),lFT=arr.reduce((s,r)=>s+r.lao_female,0);
+  const fMT=arr.reduce((s,r)=>s+(r.foreign_rows||[]).reduce((a,f)=>a+f.male,0),0);
+  const fFT=arr.reduce((s,r)=>s+(r.foreign_rows||[]).reduce((a,f)=>a+f.female,0),0);
+
+  // Sheet 1: ສະຫຼຸບ B.5.1
+  const s1=[["ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ"],["ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນະຖາວອນ"],[],
+    ["ສະຖິຕິແຮງງານລາວ ແລະ ຕ່າງປະເທດ ທີ່ເຮັດວຽກໃນເຂດເສດຖະກິດພິເສດແຂວງສະຫວັນນະເຂດ ປະຈຳເດືອນ "+mn+"/"+yr],[],
+    ["ລ/ດ","ລະຫັດ","ຊື່ (ລາວ)","ຊື່ (EN)","ເຂດ","ລາວຊາຍ","ລາວຍິງ","ລາວລວມ","ຕ.ປ.ຊາຍ","ຕ.ປ.ຍິງ","ຕ.ປ.ລວມ","ລວມ"]];
+  arr.forEach((r,i)=>{const fM=(r.foreign_rows||[]).reduce((s,f)=>s+f.male,0),fF=(r.foreign_rows||[]).reduce((s,f)=>s+f.female,0);const co=S.companies[r.company_code];s1.push([i+1,r.company_code,r.company_name,co?.name_en||"",r.zone,r.lao_male,r.lao_female,r.lao_total,fM,fF,r.foreign_total,r.grand_total]);});
+  s1.push(["","","","","ລວມ",lMT,lFT,lMT+lFT,fMT,fFT,fMT+fFT,lMT+lFT+fMT+fFT]);
+  const ws1=XLSX.utils.aoa_to_sheet(s1);ws1["!cols"]=[{wch:5},{wch:14},{wch:26},{wch:22},{wch:7},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:12}];
+  ws1["!merges"]=[{s:{r:0,c:0},e:{r:0,c:11}},{s:{r:1,c:0},e:{r:1,c:11}},{s:{r:3,c:0},e:{r:3,c:11}}];
+  XLSX.utils.book_append_sheet(wb,ws1,"B.5.1 ສະຫຼຸບລວມ");
+
+  // Sheet 2: B.5.2 ສັນຊາດ
+  const s2=[["ສະຖິຕິແຮງງານຕ່າງປະເທດ ທີ່ເຮັດວຽກໃນເຂດເສດຖະກິດພິເສດ ປະຈຳເດືອນ "+mn+"/"+yr],[],["ລ/ດ","ສັນຊາດ","ຊາຍ","ຍິງ","ລວມ"]];
+  let ni=1;Object.entries(natMap).forEach(([nat,v])=>{s2.push([ni++,nat,v.male,v.female,v.male+v.female]);});
+  s2.push(["","ລວມ",fMT,fFT,fMT+fFT]);
+  const ws2=XLSX.utils.aoa_to_sheet(s2);ws2["!merges"]=[{s:{r:0,c:0},e:{r:0,c:4}}];
+  XLSX.utils.book_append_sheet(wb,ws2,"B.5.2 ສັນຊາດ");
+
+  // Sheet 3: B.6.1 ລາຍເດືອນ
+  const s3=[["ສະຫຼຸບລາຍເດືອນ ປີ "+yr],[],["ເດືອນ","ບໍລິສັດ","ລາວລວມ","ຕ.ປ.ລວມ","ລວມ","ຮັບໃໝ່","ອອກ"]];
+  const byMonth={};S.records.forEach(r=>{const d=new Date(r.date);if(d.getFullYear()!==yr)return;const m=d.getMonth();if(!byMonth[m])byMonth[m]={};if(!byMonth[m][r.company_code]||r.date>byMonth[m][r.company_code].date)byMonth[m][r.company_code]=r;});
+  let prevTotal=0;
+  MONTHS.forEach((mn2,mi)=>{
+    if(!byMonth[mi]){s3.push([mn2,"-","-","-","-","-","-"]);return;}
+    const recs=Object.values(byMonth[mi]);const lao=recs.reduce((s,r)=>s+r.lao_total,0),for2=recs.reduce((s,r)=>s+r.foreign_total,0);const tot=lao+for2;
+    const newIn=prevTotal>0?Math.max(0,tot-prevTotal):"";const left=prevTotal>0?Math.max(0,prevTotal-tot):"";
+    s3.push([mn2,recs.length,lao,for2,tot,newIn,left]);prevTotal=tot;
+  });
+  const ws3=XLSX.utils.aoa_to_sheet(s3);ws3["!merges"]=[{s:{r:0,c:0},e:{r:0,c:6}}];
+  XLSX.utils.book_append_sheet(wb,ws3,"B.6 ລາຍເດືອນ");
+
+  // Sheet 4: C.4 ແຮງງານໃໝ່
+  const wNew=S.workers.filter(w=>w.type==="new");
+  const s4h=["ລ/ດ","ເຂດ","ບໍລິສັດ","ເພດ","ຄຳນຳ","ຊື່","ນາມສະກຸນ","ສັນຊາດ","ຕຳແໜ່ງ","ບັດແຮງ","ໝົດ","ຄັ້ງ","Passport ໝົດ","Visa ໝົດ"];
+  const s4=[[mn+" "+yr+" — ສ່ວນ C.4 ແຮງງານເຂົ້າໃໝ່"],[],s4h];
+  const byZoneCoNew={};wNew.forEach(w=>{const k=w.zone+"|"+w.company_name;if(!byZoneCoNew[k])byZoneCoNew[k]=[];byZoneCoNew[k].push(w);});
+  let ni4=1;
+  Object.entries(byZoneCoNew).sort().forEach(([k,ws])=>{
+    const f=ws.filter(w=>w.gender==="ຍິງ").sort((a,b)=>a.last_name.localeCompare(b.last_name));
+    const m=ws.filter(w=>w.gender==="ຊາຍ").sort((a,b)=>a.last_name.localeCompare(b.last_name));
+    [...f,...m].forEach(w=>{s4.push([ni4++,w.zone,w.company_name,w.gender,w.prefix,w.first_name,w.last_name,w.nationality,w.position,w.labour_no,w.labour_expiry,w.labour_round,w.passport_expiry,w.visa_expiry]);});
+  });
+  const ws4=XLSX.utils.aoa_to_sheet(s4);ws4["!merges"]=[{s:{r:0,c:0},e:{r:0,c:13}}];
+  XLSX.utils.book_append_sheet(wb,ws4,"C.4 ແຮງງານໃໝ່");
+
+  // Sheet 5: C.4 ຕໍ່ອາຍຸ
+  const wRen=S.workers.filter(w=>w.type==="renew");
+  const s5=[["C.4 ແຮງງານຕໍ່ອາຍຸ"],[],s4h];
+  const byZoneCoRen={};wRen.forEach(w=>{const k=w.zone+"|"+w.company_name;if(!byZoneCoRen[k])byZoneCoRen[k]=[];byZoneCoRen[k].push(w);});
+  let ni5=1;
+  Object.entries(byZoneCoRen).sort().forEach(([k,ws])=>{
+    const f=ws.filter(w=>w.gender==="ຍິງ").sort((a,b)=>a.last_name.localeCompare(b.last_name));
+    const m=ws.filter(w=>w.gender==="ຊາຍ").sort((a,b)=>a.last_name.localeCompare(b.last_name));
+    [...f,...m].forEach(w=>{s5.push([ni5++,w.zone,w.company_name,w.gender,w.prefix,w.first_name,w.last_name,w.nationality,w.position,w.labour_no,w.labour_expiry,w.labour_round,w.passport_expiry,w.visa_expiry]);});
+  });
+  const ws5=XLSX.utils.aoa_to_sheet(s5);ws5["!merges"]=[{s:{r:0,c:0},e:{r:0,c:13}}];
+  XLSX.utils.book_append_sheet(wb,ws5,"C.4 ຕໍ່ອາຍຸ");
+
+  // Sheet 6: ໃກ້ໝົດ
+  const exp=S.workers.filter(w=>{const d=daysUntil(w.labour_expiry);return d!==null&&d<=30;}).sort((a,b)=>daysUntil(a.labour_expiry)-daysUntil(b.labour_expiry));
+  const s6=[["ໃກ້ໝົດກຳນົດ (30 ວັນ)"],[],["ລ/ດ","ຊື່","ບໍລິສັດ","ສັນຊາດ","ບັດ ເລກທີ","ໝົດ","ເຫຼືອ","ສະຖານະ"]];
+  exp.forEach((w,i)=>{const d=daysUntil(w.labour_expiry);s6.push([i+1,w.prefix+" "+w.first_name+" "+w.last_name,w.company_name,w.nationality,w.labour_no,w.labour_expiry,d,d<0?"ໝົດ":d<=15?"⚠️ ດ່ວນ":"ໃກ້ໝົດ"]);});
+  if(!exp.length)s6.push(["","ບໍ່ມີ"]);
+  const ws6=XLSX.utils.aoa_to_sheet(s6);ws6["!merges"]=[{s:{r:0,c:0},e:{r:0,c:7}}];
+  XLSX.utils.book_append_sheet(wb,ws6,"ໃກ້ໝົດກຳນົດ");
+
+  XLSX.writeFile(wb,"SVKSEZ_"+today()+".xlsx");
+}
+
+// ══════════════════════════════════════════
+// PRINT
+// ══════════════════════════════════════════
+function doPrint(){
+  const now=new Date(),mn=MONTHS[now.getMonth()],yr=now.getFullYear();
+  const arr=getLatest();
+  const natMap={};
+  arr.forEach(r=>(r.foreign_rows||[]).forEach(fr=>{if(!natMap[fr.nationality])natMap[fr.nationality]={male:0,female:0};natMap[fr.nationality].male+=fr.male;natMap[fr.nationality].female+=fr.female;}));
+  const isR1=S.printMode==="report1";
+  const title=isR1
+    ?"ສະຖິຕິແຮງງານລາວ ແລະ ຕ່າງປະເທດ ທີ່ເຮັດວຽກໃນເຂດເສດຖະກິດພິເສດແຂວງສະຫວັນນະເຂດ ປະຈຳເດືອນ "+mn+"/"+yr
+    :"ສະຖິຕິແຮງງານຕ່າງປະເທດ ທີ່ເຮັດວຽກໃນເຂດເສດຖະກິດພິເສດແຂວງສະຫວັນນະເຂດ ປະຈຳເດືອນ "+mn+"/"+yr;
+  let tbl="";
+  if(isR1){
+    const lMT=arr.reduce((s,r)=>s+r.lao_male,0),lFT=arr.reduce((s,r)=>s+r.lao_female,0);
+    const fMT=arr.reduce((s,r)=>s+(r.foreign_rows||[]).reduce((a,f)=>a+f.male,0),0);
+    const fFT=arr.reduce((s,r)=>s+(r.foreign_rows||[]).reduce((a,f)=>a+f.female,0),0);
+    tbl=`<table style="font-size:11px"><thead>
+    <tr><th rowspan="2">ລ/ດ</th><th rowspan="2">ລະຫັດ</th><th rowspan="2">ຊື່ບໍລິສັດ (ລາວ)</th><th rowspan="2">ຊື່ (EN)</th><th rowspan="2">ເຂດ</th>
+    <th colspan="3">ແຮງງານລາວ</th><th colspan="3">ຕ່າງປະເທດ</th><th rowspan="2">ລວມ</th></tr>
+    <tr><th>ຊາຍ</th><th>ຍິງ</th><th>ລວມ</th><th>ຊາຍ</th><th>ຍິງ</th><th>ລວມ</th></tr></thead><tbody>
+    ${arr.map((r,i)=>{const fM=(r.foreign_rows||[]).reduce((s,f)=>s+f.male,0),fF=(r.foreign_rows||[]).reduce((s,f)=>s+f.female,0);const co=S.companies[r.company_code];
+    return"<tr><td style='text-align:center'>"+(i+1)+"</td><td style='font-size:9px'>"+r.company_code+"</td><td>"+r.company_name+"</td><td style='font-size:10px'>"+(co?.name_en||"")+"</td><td style='text-align:center'>"+r.zone+"</td>"
+    +"<td style='text-align:center'>"+r.lao_male+"</td><td style='text-align:center'>"+r.lao_female+"</td><td style='text-align:center;font-weight:bold'>"+r.lao_total+"</td>"
+    +"<td style='text-align:center'>"+fM+"</td><td style='text-align:center'>"+fF+"</td><td style='text-align:center;font-weight:bold'>"+r.foreign_total+"</td>"
+    +"<td style='text-align:center;font-weight:bold'>"+r.grand_total+"</td></tr>";}).join("")}
+    <tr style="font-weight:bold;background:#f0f0f0"><td colspan="5" style="text-align:center">ລວມ</td>
+    <td style="text-align:center">${lMT}</td><td style="text-align:center">${lFT}</td><td style="text-align:center">${lMT+lFT}</td>
+    <td style="text-align:center">${fMT}</td><td style="text-align:center">${fFT}</td><td style="text-align:center">${fMT+fFT}</td>
+    <td style="text-align:center">${lMT+lFT+fMT+fFT}</td></tr>
+    </tbody></table>`;
+  }else{
+    const tM=Object.values(natMap).reduce((s,v)=>s+v.male,0),tF=Object.values(natMap).reduce((s,v)=>s+v.female,0);
+    tbl=`<table style="font-size:12px"><thead><tr><th>ລ/ດ</th><th>ສັນຊາດ</th><th>ຊາຍ</th><th>ຍິງ</th><th>ລວມ</th></tr></thead><tbody>
+    ${Object.entries(natMap).map(([n,v],i)=>"<tr><td style='text-align:center'>"+(i+1)+"</td><td>"+n+"</td><td style='text-align:center'>"+v.male+"</td><td style='text-align:center'>"+v.female+"</td><td style='text-align:center;font-weight:bold'>"+(v.male+v.female)+"</td></tr>").join("")}
+    <tr style="font-weight:bold;background:#f0f0f0"><td colspan="2" style="text-align:center">ລວມ</td>
+    <td style="text-align:center">${tM}</td><td style="text-align:center">${tF}</td><td style="text-align:center">${tM+tF}</td></tr>
+    </tbody></table>`;
+  }
+  document.getElementById("app").innerHTML=`
+  <div class="no-print" style="padding:12px;background:#fef9c3;border-radius:9px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span>🖨️ ກົດ <strong>Ctrl+P</strong> ເພື່ອພິມ (A4)</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="window.print()" class="btn-blue" style="padding:7px 16px">ພິມ</button>
+      <button id="btn-cp" style="padding:7px 14px">ປິດ</button>
+    </div>
+  </div>
+  <div style="background:#fff;padding:24px;font-family:'Noto Sans Lao','Phetsarath OT',sans-serif;color:#000;max-width:210mm">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:44px;margin-bottom:4px">☸</div>
+      <div style="font-weight:bold;font-size:15px">ສາທາລະນະລັດ ປະຊາທິປະໄຕ ປະຊາຊົນລາວ</div>
+      <div style="font-size:13px;margin-top:3px">ສັນຕິພາບ ເອກະລາດ ປະຊາທິປະໄຕ ເອກະພາບ ວັດທະນະຖາວອນ</div>
+    </div>
+    <div style="text-align:right;font-size:12px;margin-bottom:2px">ແຂວງສະຫວັນນະເຂດ</div>
+    <div style="text-align:right;font-size:12px;margin-bottom:14px">ເຂດເສດຖະກິດພິເສດ ແຂວງສະຫວັນນະເຂດ</div>
+    <div style="text-align:center;font-weight:bold;font-size:14px;margin-bottom:18px;line-height:1.6">${title}</div>
+    ${tbl}
+    <div style="margin-top:40px;text-align:right">
+      <div style="display:inline-block;text-align:center;min-width:200px">
+        <div style="font-size:13px">ຜູ້ຮັບຜິດຊອບ</div>
+        <div style="margin-top:55px;border-top:1px solid #000;padding-top:5px;font-size:12px">ລາຍເຊັນ / ວັນທີ</div>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById("btn-cp").onclick=()=>{S.view="admin";render();};
+  setTimeout(()=>window.print(),600);
+}
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+initSB();
+</script>
+</body>
+</html>
